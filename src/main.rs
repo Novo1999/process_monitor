@@ -50,8 +50,8 @@ fn main() -> AnyhowResult<()> {
         let since_the_epoch: Duration = start.duration_since(UNIX_EPOCH).expect("Wrong time");
         // creating the result struct
         let result: monitors::Result = monitors::Result {
-            value: rand::thread_rng().gen_range(5..100), // generates random value in a range of 5 to 100
-            processed_at: since_the_epoch.as_secs() as i64, // generates the time in seconds
+            value: rand::thread_rng().gen_range(5..100), // generating random value in a range of 5 to 100
+            processed_at: since_the_epoch.as_secs() as i64, // generating the time in seconds
         };
         monitor.result = Some(result); // adding the result in each monitor
     }

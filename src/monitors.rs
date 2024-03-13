@@ -29,9 +29,11 @@ pub struct Result {
 }
 
 pub fn get_monitors(file_path: &str) -> AnyhowResult<Monitors> {
+    // read as string
     let content = fs::read_to_string(file_path)
         .with_context(|| format!("❗❗ Could not read file `{}`", file_path))?;
 
+    // get the monitors data
     let monitors: Monitors = serde_json::from_str(&content)
         .with_context(|| format!("❗❗ Failed to parse JSON data from file `{}`", file_path))?;
 
