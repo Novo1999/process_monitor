@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{Context, Result as AnyhowResult};
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -13,7 +13,7 @@ pub struct Monitor {
     #[serde(default)]
     pub script: Option<String>,
     #[serde(default)]
-    pub result: Option<ResultVal>,
+    pub result: Option<Result>,
     pub code: String,
     #[serde(default)]
     pub monitor_id: Option<u32>,
@@ -23,12 +23,12 @@ pub struct Monitor {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ResultVal {
+pub struct Result {
     pub value: i32,
     pub processed_at: i64,
 }
 
-pub fn get_monitors(file_path: &str) -> Result<Monitors> {
+pub fn get_monitors(file_path: &str) -> AnyhowResult<Monitors> {
     let content = fs::read_to_string(file_path)
         .with_context(|| format!("❗❗ Could not read file `{}`", file_path))?;
 
