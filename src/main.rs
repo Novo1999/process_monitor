@@ -1,7 +1,6 @@
-use anyhow::{Context, Result};
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
-use std::{env, string};
+use std::env;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Monitor {
