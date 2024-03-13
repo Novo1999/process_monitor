@@ -7,33 +7,38 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 mod monitors;
 mod write_to_file;
 
+// constants
+const MAX_LENGTH: i32 = 3;
+const USAGE_COMMAND: &str =
+    "! Usage: process_monitor -monitorFile /path/to/given/monitors.json/file";
+const EXECUTABLE_NAME: &str = "process_monitor";
+const MONITOR_FILE_COMMAND: &str = "-monitorFile";
+
 fn main() -> AnyhowResult<()> {
-    let usage_command: String =
-        String::from("! Usage: process_monitor -monitorFile /path/to/given/monitors.json/file");
     // Get the command-line arguments
     let args: Vec<String> = std::env::args().collect();
 
     let sliced_args: &[String] = &args[1..args.len()]; // ignoring the first value as it is redundant here
 
     // Check if the argument count is correct
-    if sliced_args.len() != 3 {
+    if sliced_args.len() != MAX_LENGTH as usize {
         println!("{}", "💥💥 arg count exceeded!");
         return Ok(());
     }
 
     // if first arg is not process_monitor show error
-    if sliced_args[0] != "process_monitor" {
+    if sliced_args[0] != EXECUTABLE_NAME {
         println!(
             "💥💥 Wrong executable file --> ({}) {}",
-            sliced_args[0], usage_command
+            sliced_args[0], USAGE_COMMAND
         );
         return Ok(());
     }
     // if second arg is not -monitorFile show error
-    if sliced_args[1] != "-monitorFile" {
+    if sliced_args[1] != MONITOR_FILE_COMMAND {
         println!(
             "💥💥 Wrong command --> ({}) {}",
-            sliced_args[1], usage_command
+            sliced_args[1], USAGE_COMMAND
         );
         return Ok(());
     }
