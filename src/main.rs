@@ -8,9 +8,8 @@ mod monitors;
 mod write_to_file;
 
 fn main() -> AnyhowResult<()> {
-    let wrong_command =
-        "💥💥 Wrong Command! Usage: process_monitor -monitorFile /path/to/given/monitors.json";
-
+    let usage_command =
+        String::from("! Usage: process_monitor -monitorFile /path/to/given/monitors.json");
     // Get the command-line arguments
     let args: Vec<String> = std::env::args().collect();
 
@@ -18,18 +17,24 @@ fn main() -> AnyhowResult<()> {
 
     // Check if the argument count is correct
     if sliced_args.len() != 3 {
-        println!("{}", wrong_command);
+        println!("{}", "💥💥 arg count exceeded!");
         return Ok(());
     }
 
     // if first arg is not process_monitor show error
     if sliced_args[0] != "process_monitor" {
-        println!("{}", "💥💥 Incorrect Executable File Name!");
+        println!(
+            "💥💥 Wrong executable file --> ({}) {}",
+            sliced_args[0], usage_command
+        );
         return Ok(());
     }
     // if second arg is not -monitorFile show error
     if sliced_args[1] != "-monitorFile" {
-        println!("{}", wrong_command);
+        println!(
+            "💥💥 Wrong command --> ({}) {}",
+            sliced_args[1], usage_command
+        );
         return Ok(());
     }
 
