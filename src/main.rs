@@ -9,7 +9,7 @@ mod write_to_file;
 
 fn main() -> AnyhowResult<()> {
     let usage_command =
-        String::from("! Usage: process_monitor -monitorFile /path/to/given/monitors.json");
+        String::from("! Usage: process_monitor -monitorFile /path/to/given/monitors.json/file");
     // Get the command-line arguments
     let args: Vec<String> = std::env::args().collect();
 
