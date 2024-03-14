@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::{interval, Duration as TokyoDuration};
 
 use crate::{
@@ -15,13 +15,13 @@ pub async fn update_monitors(mut monitors: Monitors) {
         interval.tick().await;
         println!("Running update monitors");
 
+        // Update monitors data
         for monitor in &mut monitors.monitors {
-            let start: SystemTime = SystemTime::now();
-            let since_the_epoch: Duration = start
+            let start = SystemTime::now();
+            let since_the_epoch = start
                 .duration_since(UNIX_EPOCH)
                 .expect("SystemTime before UNIX EPOCH!");
-            // creating the result struct
-            let result: monitors::Result = monitors::Result {
+            let result = monitors::Result {
                 value: rand::thread_rng().gen_range(5..100), // generating random value in a range of 5 to 100
                 processed_at: since_the_epoch.as_secs() as i64, // generating the time in seconds
             };
