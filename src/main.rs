@@ -1,4 +1,4 @@
-use crate::{error_handler::USAGE_COMMAND, file_writer::write_to_file};
+use crate::error_handler::USAGE_COMMAND;
 use anyhow::{Context, Result as AnyhowResult};
 use error_handler::check_error_cases;
 use monitors::Monitors;
@@ -7,15 +7,12 @@ use std::{
     sync::{Arc, Mutex},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
-use tokio::{spawn, time::interval};
-
-use chrono::Local;
+use tokio::spawn;
 
 // module declarations
 mod error_handler;
 mod file_writer;
 mod monitors;
-mod update_monitors;
 
 #[tokio::main]
 async fn main() -> AnyhowResult<()> {
@@ -71,83 +68,25 @@ async fn main() -> AnyhowResult<()> {
     println!("Monitors successfully written to file.");
     println!("🏃‍♂️ Running process Monitors...");
 
-    // Clone the Arc<Mutex<Monitors>> for each task
-    let monitors1 = Arc::clone(&monitors);
-    let monitors2 = Arc::clone(&monitors);
-
-    // Spawn two tasks to run the async functions concurrently
-    let task1 = spawn(update_monitors(monitors1));
-    let task2 = spawn(store_monitors(monitors2));
-
-    // Wait for both tasks to complete
-    task1.await?;
-    task2.await?;
+    process_monitors(monitors).await;
 
     Ok(())
 }
 
-async fn update_monitors(monitors: Arc<Mutex<Monitors>>) {
-    let mut interval = interval(Duration::from_secs(3));
+async fn process_monitors(monitors: Arc<Mutex<Monitors>>) {
+    // Clone the Monitors
+    let monitors1 = Arc::clone(&monitors);
+    let monitors2 = Arc::clone(&monitors);
 
-    loop {
-        interval.tick().await;
-        println!("Running update monitors");
+    // Spawn two tasks to run the async functions concurrently
+    let task1 = spawn(monitors::update_monitors(monitors1));
+    let task2 = spawn(monitors::store_monitors(monitors2));
 
-        // Update monitors data
-        let mut monitors = monitors.lock().unwrap();
-        for monitor in &mut monitors.monitors {
-            let start = SystemTime::now();
-            let since_the_epoch = start
-                .duration_since(UNIX_EPOCH)
-                .expect("SystemTime before UNIX EPOCH!");
-            let result = monitors::Result {
-                value: rand::thread_rng().gen_range(5..100), // generating random value in a range of 5 to 100
-                processed_at: since_the_epoch.as_secs() as i64, // generating the time in seconds
-            };
-            monitor.result = Some(result); // adding the result in each monitor
-        }
+    // Wait for both tasks to complete or until 5 minutes have passed
+    tokio::time::sleep(Duration::from_secs(300)).await;
 
-        // Write monitors to JSON file
-        if let Err(err) = write_to_file(&*monitors, "assets/monitors_with_result.json") {
-            println!("Failed to write monitors to file: {}", err);
-        } else {
-            println!("Monitors successfully written to file.");
-        }
-    }
-}
-
-async fn store_monitors(monitors: Arc<Mutex<Monitors>>) {
-    let mut interval = interval(Duration::from_secs(1));
-
-    loop {
-        interval.tick().await;
-        println!("Running store monitors");
-
-        // Update monitors data
-        let mut monitors = monitors.lock().unwrap();
-        for monitor in &mut monitors.monitors {
-            let start = SystemTime::now();
-            let since_the_epoch = start
-                .duration_since(UNIX_EPOCH)
-                .expect("SystemTime before UNIX EPOCH!");
-            let result = monitors::Result {
-                value: rand::thread_rng().gen_range(5..100), // generating random value in a range of 5 to 100
-                processed_at: since_the_epoch.as_secs() as i64, // generating the time in seconds
-            };
-            monitor.result = Some(result); // adding the result in each monitor
-        }
-
-        // Format the current time in 12-hour format with AM/PM indicator
-        let current_time_formatted = Local::now().format("%I_%M%p").to_string();
-
-        // Write monitors to JSON file with the formatted current time
-        if let Err(err) = write_to_file(
-            &monitors,
-            &format!("assets/{}_monitors.json", current_time_formatted),
-        ) {
-            println!("Failed to write monitors to file: {}", err);
-        } else {
-            println!("Monitors successfully written to file.");
-        }
-    }
+    // Cancel the tasks
+    task1.abort();
+    task2.abort();
+    println!("⌚ 5 Minutes have passed, Monitors closed");
 }
