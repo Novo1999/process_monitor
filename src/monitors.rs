@@ -1,6 +1,7 @@
 use crate::file_writer::write_to_file;
 use crate::monitors;
 use anyhow::{Context, Result as AnyhowResult};
+use chrono::Local;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -9,8 +10,6 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::time::interval;
-
-use chrono::Local;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Monitors {
