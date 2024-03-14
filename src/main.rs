@@ -1,13 +1,20 @@
 use crate::{error_handler::USAGE_COMMAND, file_writer::write_to_file};
 use anyhow::{Context, Result as AnyhowResult};
 use error_handler::check_error_cases;
+use monitors::Monitors;
 use rand::Rng;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{
+    env::Args,
+    fmt::Arguments,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
+use tokio::time::{interval, Duration as TokyoDuration};
 
 // module declarations
 mod error_handler;
 mod file_writer;
 mod monitors;
+mod update_monitors;
 
 fn main() -> AnyhowResult<()> {
     // Get the command-line arguments
@@ -60,8 +67,14 @@ fn main() -> AnyhowResult<()> {
             println!("Failed to write monitors to file: {}", err);
         } else {
             println!("Monitors successfully written to file.");
+            println!("🏃‍♂️ Running process Monitors...");
+            update_monitors::update_monitors(monitors);
         }
     }
 
     Ok(())
 }
+
+fn process_monitors() {}
+
+fn store_monitors() {}
