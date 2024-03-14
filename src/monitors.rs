@@ -76,7 +76,7 @@ pub async fn update_monitors(monitors: Arc<Mutex<Monitors>>) {
         if let Err(err) = write_to_file(&*monitors, "assets/monitors_with_result.json") {
             println!("Failed to write monitors to file: {}", err);
         } else {
-            println!("Monitors successfully written to file.");
+            println!("Monitors successfully updated.");
         }
     }
 }
@@ -113,7 +113,7 @@ pub async fn store_monitors(monitors: Arc<Mutex<Monitors>>) {
         ) {
             println!("Failed to write monitors to file: {}", err);
         } else {
-            println!("Monitors successfully written to file.");
+            println!("Monitors successfully stored.");
         }
     }
 }
