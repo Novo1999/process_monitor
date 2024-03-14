@@ -4,7 +4,7 @@
 Clone the project
 
 ```bash
-  git clone https://link-to-project
+  [git clone https://link-to-project](https://github.com/Novo1999/process_monitor.git)
 ```
 
 Go to the project directory
