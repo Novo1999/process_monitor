@@ -1,59 +1,54 @@
-use crate::write_to_file::write_to_file;
-use anyhow::Result as AnyhowResult;
+use crate::{error_handler::USAGE_COMMAND, write_to_file::write_to_file};
+use anyhow::{Context, Result as AnyhowResult};
+use error_handler::check_error_cases;
 use rand::Rng;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 // module declarations
+mod error_handler;
 mod monitors;
 mod write_to_file;
-
-// constants
-const MAX_LENGTH: i32 = 3;
-const USAGE_COMMAND: &str =
-    "! Usage: process_monitor -monitorFile /path/to/given/monitors.json/file";
-const EXECUTABLE_NAME: &str = "process_monitor";
-const MONITOR_FILE_COMMAND: &str = "-monitorFile";
 
 fn main() -> AnyhowResult<()> {
     // Get the command-line arguments
     let args: Vec<String> = std::env::args().collect();
 
-    let sliced_args: &[String] = &args[1..args.len()]; // ignoring the first value as it is redundant here
+    println!("{:?}", args);
 
-    // Check if the argument count is correct
-    if sliced_args.len() != MAX_LENGTH as usize {
-        println!("{}", "💥💥 arg count exceeded!");
+    // Check if enough arguments are provided
+    if args.len() == 1 {
+        println!("💥 NO ARGUMENTS PROVIDED! / {}", USAGE_COMMAND);
         return Ok(());
     }
 
-    // if first arg is not process_monitor show error
-    if sliced_args[0] != EXECUTABLE_NAME {
-        println!(
-            "💥💥 Wrong executable file --> ({}) {}",
-            sliced_args[0], USAGE_COMMAND
-        );
-        return Ok(());
-    }
-    // if second arg is not -monitorFile show error
-    if sliced_args[1] != MONITOR_FILE_COMMAND {
-        println!(
-            "💥💥 Wrong command --> ({}) {}",
-            sliced_args[1], USAGE_COMMAND
-        );
+    if args.len() == 2 {
+        println!("💥💥 Very few arguments! / {}", USAGE_COMMAND);
         return Ok(());
     }
 
     // Get the file path from the third argument
-    let file_path: &String = &sliced_args[2];
+    let file_path: &String = &args[2];
+
+    // Check if the file path is provided
+    if file_path.is_empty() {
+        println!("File path is empty.");
+        return Ok(());
+    }
+
+    // this will handle more errors based on multiple wrong user input cases
+    check_error_cases(&args[1..]).ok();
 
     // Get monitors from the file
-    let mut monitors: monitors::Monitors = monitors::get_monitors(file_path)?;
+    let mut monitors: monitors::Monitors = monitors::get_monitors(file_path)
+        .with_context(|| format!("Failed to get monitors from file: {}", file_path))?;
 
     // Add results to monitors
     for monitor in &mut monitors.monitors {
         let start: SystemTime = SystemTime::now();
-        let since_the_epoch: Duration = start.duration_since(UNIX_EPOCH).expect("Wrong time");
-        // creating the result struct
+        let since_the_epoch: Duration = start
+            .duration_since(UNIX_EPOCH)
+            .expect("SystemTime before UNIX EPOCH!"); // This should never happen
+                                                      // creating the result struct
         let result: monitors::Result = monitors::Result {
             value: rand::thread_rng().gen_range(5..100), // generating random value in a range of 5 to 100
             processed_at: since_the_epoch.as_secs() as i64, // generating the time in seconds
@@ -62,9 +57,8 @@ fn main() -> AnyhowResult<()> {
     }
 
     // Write monitors to JSON file
-    if let Err(err) = write_to_file(&monitors, "assets/updated_monitors.json") {
-        println!("❗❗ Error writing to file: {}", err);
-    }
+    write_to_file(&monitors, "assets/updated_monitors.json")
+        .with_context(|| "Failed to write monitors to file")?;
 
     Ok(())
 }
